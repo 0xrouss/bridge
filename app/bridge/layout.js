@@ -1,4 +1,5 @@
 // app/about/layout.js
+import Navbar from "@/components/navbar";
 import { Web3Provider } from "@/components/Web3Provider";
 import { Inter } from "next/font/google";
 
@@ -12,7 +13,10 @@ export const metadata = {
 export default function BridgeLayout({ children }) {
     return (
         <section>
-            <Web3Provider>{children}</Web3Provider>
+            <Web3Provider>
+                <Navbar />
+                {children}
+            </Web3Provider>
         </section>
     );
 }

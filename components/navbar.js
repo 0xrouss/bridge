@@ -10,7 +10,7 @@ export default function Navbar() {
                 <div className="flex w-full max-w-6xl items-center justify-between px-4 md:px-6">
                     <div className="flex items-center space-x-4">
                         <Link href="/" className="text-xl font-bold">
-                            AggLayer Bridge
+                            AggLayer Rouss
                         </Link>
                     </div>
                     <div className="flex items-center space-x-4">

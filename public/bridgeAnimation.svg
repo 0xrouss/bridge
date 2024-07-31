@@ -1,0 +1,50 @@
+<svg width="410" height="104" viewBox="0 0 410 104" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="glowFilter" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="4" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+    <linearGradient id="paint0_linear_1_4" x1="0" y1="25.5" x2="410" y2="25.5" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#563FE6" stop-opacity="0"/>
+      <stop offset="0.1" stop-color="#563FE6" stop-opacity="1"/>
+      <stop offset="0.5" stop-color="#C270D7"/>
+      <stop offset="0.9" stop-color="#563FE5" stop-opacity="1"/>
+      <stop offset="1" stop-color="#563FE5" stop-opacity="0"/>
+    </linearGradient>
+    <mask id="mask1">
+      <rect x="0" y="0" width="150" height="204" fill="white">
+        <animate attributeName="x" from="-150" to="410" dur="1s" repeatCount="indefinite" />
+      </rect>
+    </mask>
+    <mask id="mask2">
+      <rect x="0" y="0" width="150" height="204" fill="white">
+        <animate attributeName="x" from="-150" to="410" dur="1.2s" repeatCount="indefinite" />
+      </rect>
+    </mask>
+    <mask id="mask3">
+      <rect x="0" y="0" width="150" height="204" fill="white">
+        <animate attributeName="x" from="-150" to="410" dur="1.4s" repeatCount="indefinite" />
+      </rect>
+    </mask>
+    <mask id="mask4">
+      <rect x="0" y="0" width="150" height="204" fill="white">
+        <animate attributeName="x" from="-150" to="410" dur="1.6s" repeatCount="indefinite" />
+      </rect>
+    </mask>
+  </defs>
+  <g filter="url(#glowFilter)" mask="url(#mask1)">
+    <path d="M0 2H38.3682C55.2655 2 71.9723 5.56855 87.395 12.472L136.142 34.292C157.803 43.988 181.268 49 205 49V49C228.732 49 252.197 43.988 273.858 34.292L322.605 12.472C338.028 5.56855 354.735 2 371.632 2H410" stroke="url(#paint0_linear_1_4)" stroke-width="3"/>
+  </g>
+  <g transform="translate(0, 46)" filter="url(#glowFilter)" mask="url(#mask2)">
+    <path d="M0 2H38.3682C55.2655 2 71.9723 5.56855 87.395 12.472L136.142 34.292C157.803 43.988 181.268 49 205 49V49C228.732 49 252.197 43.988 273.858 34.292L322.605 12.472C338.028 5.56855 354.735 2 371.632 2H410" stroke="url(#paint0_linear_1_4)" stroke-width="3"/>
+  </g>
+  <g transform="translate(0, 50) scale(1, -1)" filter="url(#glowFilter)" mask="url(#mask3)">
+    <path d="M0 2H38.3682C55.2655 2 71.9723 5.56855 87.395 12.472L136.142 34.292C157.803 43.988 181.268 49 205 49V49C228.732 49 252.197 43.988 273.858 34.292L322.605 12.472C338.028 5.56855 354.735 2 371.632 2H410" stroke="url(#paint0_linear_1_4)" stroke-width="3"/>
+  </g>
+  <g transform="translate(0, 98) scale(1, -1)" filter="url(#glowFilter)" mask="url(#mask4)">
+    <path d="M0 2H38.3682C55.2655 2 71.9723 5.56855 87.395 12.472L136.142 34.292C157.803 43.988 181.268 49 205 49V49C228.732 49 252.197 43.988 273.858 34.292L322.605 12.472C338.028 5.56855 354.735 2 371.632 2H410" stroke="url(#paint0_linear_1_4)" stroke-width="3"/>
+  </g>
+</svg>
