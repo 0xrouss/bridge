@@ -1,10 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount, useBalance } from "wagmi";
+import { useAccount, useBalance, useWriteContract } from "wagmi";
 import BigAmountInput from "@/components/BigAmountInput";
 import ChainSelect from "@/components/ChainSelect";
 import { polygonZkEvmCardona, sepolia, astarZkyoto } from "viem/chains";
+import PreviousTransactions from "@/components/PreviousTransactions";
+import { parseUnits } from "viem";
+import PolygonZkEVMBridge from "@/lib/PolygonZkEVMBridge";
+import { TESTNET_BRIDGE_ADDRESS } from "@/config/constants";
 
 // Make sure that this component is wrapped with ConnectKitProvider
 export default function Page() {
@@ -12,15 +16,23 @@ export default function Page() {
     const [selectedOriginChainId, setSelectedOriginChainId] = useState(
         sepolia.id
     );
-
     const [selectedDestChainId, setSelectedDestChainId] = useState(
         polygonZkEvmCardona.id
     );
+    const [amount, setAmount] = useState("");
+    const { data: hash, writeContractAsync: writeContract } =
+        useWriteContract();
 
     const { data: balanceData, isSuccess } = useBalance({
         address: address,
         chainId: selectedOriginChainId,
     });
+
+    const chains = {
+        11155111: 0,
+        2442: 1,
+        6038361: 2,
+    };
 
     const handleOriginChainSelect = (chainId) => {
         if (chainId === selectedDestChainId) {
@@ -36,12 +48,33 @@ export default function Page() {
         setSelectedDestChainId(chainId);
     };
 
+    const handleBridgeClick = async () => {
+        const args = [
+            chains[selectedDestChainId], // destinationNetwork
+            address, // destinationAddress
+            parseUnits(amount.toString(), 18), // amount
+            "0x0000000000000000000000000000000000000000", // token
+            true, // forceUpdateGlobalExitRoot
+            "", // permitData
+        ];
+
+        const tx = await writeContract({
+            address: TESTNET_BRIDGE_ADDRESS,
+            abi: PolygonZkEVMBridge,
+            functionName: "bridgeAsset",
+            args: args,
+            value: parseUnits(amount.toString(), 18),
+        });
+
+        console.log(tx);
+    };
+
     return (
         <main>
             <div className="mt-4 text-center max-w-lg mx-auto p-4">
                 <h1 className="font-bold text-2xl mb-4">Ethereum Bridge</h1>
                 <section className="mx-auto flex flex-col items-center">
-                    <div className="flex w-full flex-col justify-between rounded-2xl border bg-white">
+                    <div className="flex w-full flex-col justify-between rounded-2xl border shadow-md bg-white">
                         <div className="p-5">
                             <div className="flex justify-between">
                                 <div>
@@ -77,26 +110,35 @@ export default function Page() {
                                 </div>
                             </div>
 
-                            <div className="bg-slate-100 py-10 mt-2 border rounded-2xl">
-                                <BigAmountInput />
+                            <div className="py-10 mt-2 border rounded-2xl">
+                                <BigAmountInput
+                                    inputValue={amount}
+                                    setInputValue={setAmount}
+                                />
                                 <div className="font-medium text-gray-500 text-sm mt-2">
                                     {isConnected && isSuccess
                                         ? `${balanceData?.formatted.slice(
                                               0,
                                               6
                                           )} ${balanceData?.symbol} available`
-                                        : "0"}
+                                        : "Please connect"}
                                 </div>
                             </div>
 
                             <div>
-                                <button className="bg-indigo-500 text-white font-semibold text-2xl h-16 mt-1 w-full border rounded-2xl hover:bg-indigo-600">
+                                <button
+                                    onClick={handleBridgeClick}
+                                    className={`text-white font-semibold text-lg h-16 mt-1 w-full border rounded-2xl bg-indigo-500 hover:bg-indigo-600`}
+                                >
                                     Bridge
                                 </button>
                             </div>
                         </div>
                     </div>
                 </section>
+                {/* <div className="mt-4">
+                    <PreviousTransactions />
+                </div> */}
             </div>
         </main>
     );

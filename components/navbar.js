@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { ConnectKitButton } from "connectkit";
 
@@ -10,7 +11,13 @@ export default function Navbar() {
                 <div className="flex w-full max-w-6xl items-center justify-between px-4 md:px-6">
                     <div className="flex items-center space-x-4">
                         <Link href="/" className="text-xl font-bold">
-                            AggLayer Rouss
+                            <Image
+                                src="/rouss.svg"
+                                alt="Rouss Logo"
+                                width={120}
+                                height={50}
+                                priority
+                            />
                         </Link>
                     </div>
                     <div className="flex items-center space-x-4">

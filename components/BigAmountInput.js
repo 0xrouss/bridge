@@ -1,7 +1,6 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 
-const BigAmountInput = () => {
-    const [inputValue, setInputValue] = useState("");
+const BigAmountInput = ({ inputValue, setInputValue }) => {
     const [fontSize, setFontSize] = useState("4rem");
 
     useEffect(() => {
@@ -33,7 +32,7 @@ const BigAmountInput = () => {
                 placeholder="0"
                 type="text"
                 style={{ fontSize, transition: "font-size 0.3s ease-in-out" }}
-                className={`h-16 w-3/4 outline-none custom-input text-center font-extrabold bg-transparent`}
+                className={`h-16 w-3/4 outline-none custom-input text-center font-bold bg-transparent`}
             />
         </div>
     );
