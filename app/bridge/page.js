@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useAccount, useBalance, useWriteContract } from "wagmi";
+import {
+    useAccount,
+    useBalance,
+    useSwitchChain,
+    useWriteContract,
+} from "wagmi";
 import BigAmountInput from "@/components/BigAmountInput";
 import ChainSelect from "@/components/ChainSelect";
 import { polygonZkEvmCardona, sepolia, astarZkyoto } from "viem/chains";
@@ -9,10 +14,11 @@ import PreviousTransactions from "@/components/PreviousTransactions";
 import { parseUnits } from "viem";
 import PolygonZkEVMBridge from "@/lib/PolygonZkEVMBridge";
 import { TESTNET_BRIDGE_ADDRESS } from "@/config/constants";
+import { config } from "@/components/Web3Provider";
 
-// Make sure that this component is wrapped with ConnectKitProvider
 export default function Page() {
-    const { address, isConnected } = useAccount();
+    const { chain, switchChain } = useSwitchChain();
+    const { address, isConnected, chainId } = useAccount();
     const [selectedOriginChainId, setSelectedOriginChainId] = useState(
         sepolia.id
     );
@@ -20,9 +26,12 @@ export default function Page() {
         polygonZkEvmCardona.id
     );
     const [amount, setAmount] = useState("");
-    const { data: hash, writeContractAsync: writeContract } =
-        useWriteContract();
-
+    const [errorMessage, setErrorMessage] = useState(""); // To store error messages
+    const {
+        data: hash,
+        error,
+        writeContractAsync: writeContract,
+    } = useWriteContract();
     const { data: balanceData, isSuccess } = useBalance({
         address: address,
         chainId: selectedOriginChainId,
@@ -48,25 +57,80 @@ export default function Page() {
         setSelectedDestChainId(chainId);
     };
 
+    const handleSwitchChain = async () => {
+        try {
+            if (selectedOriginChainId !== chainId) {
+                await switchChain({ chainId: selectedOriginChainId });
+                setErrorMessage(""); // Clear any previous error message
+            }
+        } catch (error) {
+            if (error.code === 4001) {
+                // 4001 is the error code for user rejection in MetaMask
+                setErrorMessage("Network switch was rejected by the user.");
+            } else {
+                setErrorMessage("Failed to switch network. Please try again.");
+            }
+        }
+    };
+
     const handleBridgeClick = async () => {
-        const args = [
-            chains[selectedDestChainId], // destinationNetwork
-            address, // destinationAddress
-            parseUnits(amount.toString(), 18), // amount
-            "0x0000000000000000000000000000000000000000", // token
-            true, // forceUpdateGlobalExitRoot
-            "", // permitData
-        ];
+        try {
+            setErrorMessage(""); // Clear any previous error message
 
-        const tx = await writeContract({
-            address: TESTNET_BRIDGE_ADDRESS,
-            abi: PolygonZkEVMBridge,
-            functionName: "bridgeAsset",
-            args: args,
-            value: parseUnits(amount.toString(), 18),
-        });
+            const args = [
+                chains[selectedDestChainId], // destinationNetwork
+                address, // destinationAddress
+                parseUnits(amount.toString(), 18), // amount
+                "0x0000000000000000000000000000000000000000", // token
+                true, // forceUpdateGlobalExitRoot
+                "", // permitData
+            ];
 
-        console.log(tx);
+            const tx = await writeContract({
+                address: TESTNET_BRIDGE_ADDRESS,
+                abi: PolygonZkEVMBridge,
+                functionName: "bridgeAsset",
+                args: args,
+                value: parseUnits(amount.toString(), 18),
+            });
+
+            console.log(tx);
+        } catch (error) {
+            console.log(error);
+            if (error.code === 4001) {
+                // 4001 is the error code for user rejection in MetaMask
+                setErrorMessage("Transaction was rejected by the user.");
+            } else {
+                setErrorMessage(
+                    "Failed to complete the transaction. Please try again."
+                );
+            }
+        }
+    };
+
+    const isBalanceInsufficient =
+        isSuccess && parseFloat(amount) > parseFloat(balanceData?.formatted);
+    const isChainMismatch = selectedOriginChainId !== chainId;
+    const isButtonDisabled = !isConnected || isBalanceInsufficient;
+
+    const getButtonText = () => {
+        if (!isConnected) {
+            return "Please connect";
+        } else if (isChainMismatch) {
+            return "Change chain";
+        } else if (isBalanceInsufficient) {
+            return "Insufficient balance";
+        } else {
+            return "Bridge";
+        }
+    };
+
+    const handleButtonClick = async () => {
+        if (isChainMismatch) {
+            await handleSwitchChain();
+        } else {
+            await handleBridgeClick();
+        }
     };
 
     return (
@@ -125,20 +189,31 @@ export default function Page() {
                                 </div>
                             </div>
 
+                            {errorMessage && (
+                                <div className="text-red-500 text-sm mb-2">
+                                    {errorMessage}
+                                </div>
+                            )}
+
                             <div>
                                 <button
-                                    onClick={handleBridgeClick}
-                                    className={`text-white font-semibold text-lg h-16 mt-1 w-full border rounded-2xl bg-indigo-500 hover:bg-indigo-600`}
+                                    onClick={handleButtonClick}
+                                    disabled={
+                                        isButtonDisabled && !isChainMismatch
+                                    }
+                                    className={`font-semibold text-lg h-16 mt-1 w-full border rounded-2xl 
+                                        ${
+                                            isButtonDisabled && !isChainMismatch
+                                                ? "bg-gray-400"
+                                                : "bg-indigo-500 hover:bg-indigo-600"
+                                        } text-white`}
                                 >
-                                    Bridge
+                                    {getButtonText()}
                                 </button>
                             </div>
                         </div>
                     </div>
                 </section>
-                {/* <div className="mt-4">
-                    <PreviousTransactions />
-                </div> */}
             </div>
         </main>
     );
