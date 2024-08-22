@@ -1,6 +1,5 @@
 "use client";
 
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 
 export default function Home() {
@@ -20,7 +19,7 @@ export default function Home() {
                     rouss
                 </h1>
                 <p className="text-xl mb-8 max-w-2xl mx-auto">
-                    I'm creating an innovative interface for the AggLayer
+                    I&apos;m creating an innovative interface for the AggLayer
                     Bridge, enhancing functionality and user experience.
                 </p>
                 <button
