@@ -21,10 +21,6 @@ export default function Navbar() {
                         </Link>
                     </div>
                     <div className="flex items-center space-x-4">
-                        <Link href="#" className="text-sm hidden sm:block">
-                            How it works
-                        </Link>
-
                         <ConnectKitButton />
                     </div>
                 </div>

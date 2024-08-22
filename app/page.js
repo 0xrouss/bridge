@@ -56,7 +56,7 @@ export default function Home() {
                         </svg>
                     </a>
                     <a
-                        href="https://github.com/0xrouss"
+                        href="https://github.com/0xrouss/bridge"
                         target="_blank"
                         rel="noopener noreferrer"
                         className="text-gray-600 hover:text-gray-900"
