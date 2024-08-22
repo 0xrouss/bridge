@@ -17,8 +17,10 @@ import { TESTNET_BRIDGE_ADDRESS } from "@/config/constants";
 import { config } from "@/components/Web3Provider";
 
 export default function Page() {
-    const { chain, switchChain } = useSwitchChain();
+    const { chain, switchChainAsync } = useSwitchChain();
     const { address, isConnected, chainId } = useAccount();
+    const [isLoading, setIsLoading] = useState(false);
+
     const [selectedOriginChainId, setSelectedOriginChainId] = useState(
         sepolia.id
     );
@@ -26,12 +28,8 @@ export default function Page() {
         polygonZkEvmCardona.id
     );
     const [amount, setAmount] = useState("");
-    const [errorMessage, setErrorMessage] = useState(""); // To store error messages
-    const {
-        data: hash,
-        error,
-        writeContractAsync: writeContract,
-    } = useWriteContract();
+    const { data: hash, writeContractAsync: writeContract } =
+        useWriteContract();
     const { data: balanceData, isSuccess } = useBalance({
         address: address,
         chainId: selectedOriginChainId,
@@ -57,25 +55,12 @@ export default function Page() {
         setSelectedDestChainId(chainId);
     };
 
-    const handleSwitchChain = async () => {
-        try {
-            if (selectedOriginChainId !== chainId) {
-                await switchChain({ chainId: selectedOriginChainId });
-                setErrorMessage(""); // Clear any previous error message
-            }
-        } catch (error) {
-            if (error.code === 4001) {
-                // 4001 is the error code for user rejection in MetaMask
-                setErrorMessage("Network switch was rejected by the user.");
-            } else {
-                setErrorMessage("Failed to switch network. Please try again.");
-            }
-        }
-    };
-
     const handleBridgeClick = async () => {
         try {
-            setErrorMessage(""); // Clear any previous error message
+            setIsLoading(true);
+            if (selectedOriginChainId !== chainId) {
+                await switchChainAsync({ chainId: selectedOriginChainId });
+            }
 
             const args = [
                 chains[selectedDestChainId], // destinationNetwork
@@ -94,44 +79,46 @@ export default function Page() {
                 value: parseUnits(amount.toString(), 18),
             });
 
-            console.log(tx);
-        } catch (error) {
-            console.log(error);
-            if (error.code === 4001) {
-                // 4001 is the error code for user rejection in MetaMask
-                setErrorMessage("Transaction was rejected by the user.");
-            } else {
-                setErrorMessage(
-                    "Failed to complete the transaction. Please try again."
-                );
-            }
+            console.log(tx); // TODO: toast
+        } catch {
+            console.log("----error----"); // TODO: toast
+        } finally {
+            setIsLoading(false);
         }
     };
 
-    const isBalanceInsufficient =
-        isSuccess && parseFloat(amount) > parseFloat(balanceData?.formatted);
-    const isChainMismatch = selectedOriginChainId !== chainId;
-    const isButtonDisabled = !isConnected || isBalanceInsufficient;
+    const [isBalanceInsufficient, setIsBalanceInsufficient] = useState(false);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+    const [buttonText, setButtonText] = useState("Please connect");
+    const [buttonClass, setButtonClass] = useState("bg-gray-400");
 
-    const getButtonText = () => {
+    useEffect(() => {
+        const insufficientBalance =
+            isSuccess &&
+            parseFloat(amount) > parseFloat(balanceData?.formatted);
+        setIsBalanceInsufficient(insufficientBalance);
+
+        const buttonDisabled =
+            !isConnected || insufficientBalance || isLoading || amount == 0;
+        setIsButtonDisabled(buttonDisabled);
+
         if (!isConnected) {
-            return "Please connect";
-        } else if (isChainMismatch) {
-            return "Change chain";
-        } else if (isBalanceInsufficient) {
-            return "Insufficient balance";
+            setButtonText("Please connect");
+            setButtonClass("bg-gray-400");
+        } else if (insufficientBalance) {
+            setButtonText("Insufficient balance");
+            setButtonClass("bg-gray-400");
+        } else if (amount == 0) {
+            setButtonText("Input amount");
+            setButtonClass("bg-gray-400");
+        } else if (isLoading) {
+            setButtonText("Bridging...");
+            setButtonClass("bg-indigo-500");
         } else {
-            return "Bridge";
+            setButtonText("Bridge");
+            setButtonClass("bg-indigo-500 hover:bg-indigo-600");
         }
-    };
-
-    const handleButtonClick = async () => {
-        if (isChainMismatch) {
-            await handleSwitchChain();
-        } else {
-            await handleBridgeClick();
-        }
-    };
+    }, [isConnected, isSuccess, balanceData, amount, isLoading]);
 
     return (
         <main>
@@ -189,26 +176,16 @@ export default function Page() {
                                 </div>
                             </div>
 
-                            {errorMessage && (
-                                <div className="text-red-500 text-sm mb-2">
-                                    {errorMessage}
-                                </div>
-                            )}
-
                             <div>
                                 <button
-                                    onClick={handleButtonClick}
-                                    disabled={
-                                        isButtonDisabled && !isChainMismatch
-                                    }
-                                    className={`font-semibold text-lg h-16 mt-1 w-full border rounded-2xl 
-                                        ${
-                                            isButtonDisabled && !isChainMismatch
-                                                ? "bg-gray-400"
-                                                : "bg-indigo-500 hover:bg-indigo-600"
-                                        } text-white`}
+                                    onClick={handleBridgeClick}
+                                    disabled={isButtonDisabled}
+                                    className={`font-semibold text-lg h-16 mt-1 w-full border rounded-2xl text-white flex justify-center items-center ${buttonClass}`}
                                 >
-                                    {getButtonText()}
+                                    {isLoading && (
+                                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
+                                    )}
+                                    {buttonText}
                                 </button>
                             </div>
                         </div>
