@@ -12,10 +12,7 @@ export default function Home() {
     return (
         <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-b from-blue-100 to-white text-gray-800">
             <main className="text-center px-4">
-                <h1
-                    className="text-9xl  mb-6 text-blue-600"
-                    style={{ fontFamily: "Subscribe" }}
-                >
+                <h1 className="text-9xl  mb-6 text-blue-600 font-subscribe">
                     rouss
                 </h1>
                 <p className="text-xl mb-8 max-w-2xl mx-auto">
