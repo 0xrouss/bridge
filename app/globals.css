@@ -4,7 +4,7 @@
 
 @font-face {
     font-family: "Subscribe";
-    src: url("/fonts/Subscribe.ttf") format("ttf");
+    src: url("/fonts/Subscribe.ttf") format("truetype");
     font-weight: normal;
     font-style: normal;
 }
