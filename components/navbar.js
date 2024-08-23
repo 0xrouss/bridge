@@ -11,13 +11,9 @@ export default function Navbar() {
                 <div className="flex w-full max-w-6xl items-center justify-between px-4 md:px-6">
                     <div className="flex items-center space-x-4">
                         <Link href="/" className="text-xl font-bold">
-                            <Image
-                                src="/rouss.svg"
-                                alt="Rouss Logo"
-                                width={120}
-                                height={50}
-                                priority
-                            />
+                            <h1 className="text-6xl font-thin text-custom-purple font-subscribe pb-2">
+                                rouss
+                            </h1>
                         </Link>
                     </div>
                     <div className="flex items-center space-x-4">

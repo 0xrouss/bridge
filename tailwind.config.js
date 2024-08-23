@@ -15,6 +15,9 @@ module.exports = {
             fontFamily: {
                 subscribe: ["Subscribe", "sans-serif"],
             },
+            colors: {
+                "custom-purple": "#4f46e5",
+            },
         },
     },
     plugins: [],

@@ -27,6 +27,7 @@ export default function Page() {
     const [selectedDestChainId, setSelectedDestChainId] = useState(
         polygonZkEvmCardona.id
     );
+
     const [amount, setAmount] = useState("");
     const { data: hash, writeContractAsync: writeContract } =
         useWriteContract();
@@ -123,7 +124,9 @@ export default function Page() {
     return (
         <main>
             <div className="mt-4 text-center max-w-lg mx-auto p-4">
-                <h1 className="font-bold text-2xl mb-4">Ethereum Bridge</h1>
+                <p className="font-bold text-2xl mb-4">
+                    Bridge Ether with the LxLy Bridge
+                </p>
                 <section className="mx-auto flex flex-col items-center">
                     <div className="flex w-full flex-col justify-between rounded-2xl border shadow-md bg-white">
                         <div className="p-5">
