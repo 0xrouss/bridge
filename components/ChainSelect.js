@@ -1,59 +1,120 @@
 import Image from "next/image";
-import { useState, useRef, useEffect } from "react";
-import { astarZkyoto, polygonZkEvmCardona, sepolia } from "viem/chains";
+import { useState, useRef, useEffect, useMemo, useCallback } from "react";
+import { chainSelectorOptions as options } from "@/config/chains";
 
-const options = [
-    { label: "Sepolia", imageSrc: "/eth.svg", chainId: sepolia.id },
-    {
-        label: "Cardona",
-        imageSrc: "/polygon.svg",
-        chainId: polygonZkEvmCardona.id,
-    },
-    { label: "zKyoto", imageSrc: "/zkyoto.svg", chainId: astarZkyoto.id },
-];
+// DropdownOption memoized for performance
+const DropdownOption = ({ option, onClick, isSelected }) => (
+    <li
+        role="option"
+        aria-selected={isSelected}
+        className={`hover:bg-indigo-100 hover:text-white px-4 py-2 cursor-pointer flex border-t border-gray-300 first:border-t-0 ${
+            isSelected ? "bg-indigo-100 text-white" : ""
+        }`}
+        onClick={onClick}
+    >
+        <Image
+            src={option.imageSrc}
+            alt={`${option.label} Logo`}
+            width={22}
+            height={22}
+            priority
+        />
+        <p className="pl-4 text-gray-800">{option.label}</p>
+    </li>
+);
 
 export default function ChainSelect({ selectedChainId, onChainSelect }) {
     const dropdownRef = useRef(null);
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState(
-        options.find((option) => option.chainId === selectedChainId)
+    const [focusedOptionIndex, setFocusedOptionIndex] = useState(null);
+
+    // Memoize options
+    const memoizedOptions = useMemo(() => options, []);
+
+    const selectedOption = useMemo(
+        () =>
+            memoizedOptions.find(
+                (option) => option.chainId === selectedChainId
+            ),
+        [selectedChainId, memoizedOptions]
     );
 
     const toggleDropdown = () => setIsOpen((prev) => !prev);
 
     const handleOptionClick = (option) => {
-        setSelectedOption(option);
         setIsOpen(false);
         onChainSelect(option.chainId);
     };
 
-    const handleClickOutside = (event) => {
+    const handleClickOutside = useCallback((event) => {
         if (
             dropdownRef.current &&
             !dropdownRef.current.contains(event.target)
         ) {
             setIsOpen(false);
         }
-    };
-
-    useEffect(() => {
-        document.addEventListener("click", handleClickOutside, true);
-        return () => {
-            document.removeEventListener("click", handleClickOutside, true);
-        };
     }, []);
 
+    const handleKeyDown = useCallback(
+        (event) => {
+            if (!isOpen) return;
+
+            switch (event.key) {
+                case "ArrowDown":
+                    setFocusedOptionIndex((prevIndex) =>
+                        prevIndex === null ||
+                        prevIndex === memoizedOptions.length - 1
+                            ? 0
+                            : prevIndex + 1
+                    );
+                    break;
+                case "ArrowUp":
+                    setFocusedOptionIndex((prevIndex) =>
+                        prevIndex === null || prevIndex === 0
+                            ? memoizedOptions.length - 1
+                            : prevIndex - 1
+                    );
+                    break;
+                case "Enter":
+                    if (focusedOptionIndex !== null) {
+                        handleOptionClick(memoizedOptions[focusedOptionIndex]);
+                    }
+                    break;
+                case "Escape":
+                    setIsOpen(false);
+                    break;
+                default:
+                    break;
+            }
+        },
+        [isOpen, focusedOptionIndex, memoizedOptions]
+    );
+
     useEffect(() => {
-        const newSelectedOption = options.find(
-            (option) => option.chainId === selectedChainId
-        );
-        setSelectedOption(newSelectedOption);
-    }, [selectedChainId]);
+        document.addEventListener("mousedown", handleClickOutside, true);
+        window.addEventListener("keydown", handleKeyDown, true);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside, true);
+            window.removeEventListener("keydown", handleKeyDown, true);
+        };
+    }, [handleClickOutside, handleKeyDown]);
+
+    useEffect(() => {
+        if (isOpen) {
+            setFocusedOptionIndex(
+                memoizedOptions.findIndex(
+                    (option) => option.chainId === selectedChainId
+                )
+            );
+        }
+    }, [isOpen, selectedChainId, memoizedOptions]);
 
     return (
         <div className="relative inline-block w-32" ref={dropdownRef}>
             <button
                 id="selectButton"
+                aria-haspopup="listbox"
+                aria-expanded={isOpen}
                 className="w-full flex items-center bg-white border border-gray-300 rounded-full shadow-sm px-2 py-1 text-left cursor-pointer focus:outline-none focus:ring-2 focus:ring-indigo-500 transition ease-in-out duration-200"
                 onClick={toggleDropdown}
             >
@@ -85,23 +146,17 @@ export default function ChainSelect({ selectedChainId, onChainSelect }) {
             {isOpen && (
                 <ul
                     id="dropdownMenu"
+                    role="listbox"
+                    aria-labelledby="selectButton"
                     className="absolute left-1/2 transform -translate-x-1/2 z-10 mt-1 w-40 bg-white border border-gray-300 rounded-md shadow-lg overflow-hidden transform origin-top transition-all duration-300 ease-in-out opacity-100 scale-100"
                 >
-                    {options.map((option) => (
-                        <li
+                    {memoizedOptions.map((option, index) => (
+                        <DropdownOption
                             key={option.label}
-                            className="hover:bg-indigo-100 hover:text-white px-4 py-2 cursor-pointer flex border-t border-gray-300 first:border-t-0"
+                            option={option}
+                            isSelected={index === focusedOptionIndex}
                             onClick={() => handleOptionClick(option)}
-                        >
-                            <Image
-                                src={option.imageSrc}
-                                alt={`${option.label} Logo`}
-                                width={22}
-                                height={22}
-                                priority
-                            />
-                            <p className="pl-4 text-gray-800">{option.label}</p>
-                        </li>
+                        />
                     ))}
                 </ul>
             )}

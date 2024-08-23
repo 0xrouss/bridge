@@ -9,26 +9,29 @@ import {
 } from "wagmi";
 import BigAmountInput from "@/components/BigAmountInput";
 import ChainSelect from "@/components/ChainSelect";
-import { polygonZkEvmCardona, sepolia, astarZkyoto } from "viem/chains";
 import PreviousTransactions from "@/components/PreviousTransactions";
 import { parseUnits } from "viem";
 import PolygonZkEVMBridge from "@/lib/PolygonZkEVMBridge";
 import { TESTNET_BRIDGE_ADDRESS } from "@/config/constants";
-import { config } from "@/components/Web3Provider";
+import { getChainIndex } from "@/utils/chainUtils";
+import { chainSelectorOptions } from "@/config/chains";
 
 export default function Page() {
-    const { chain, switchChainAsync } = useSwitchChain();
-    const { address, isConnected, chainId } = useAccount();
     const [isLoading, setIsLoading] = useState(false);
-
     const [selectedOriginChainId, setSelectedOriginChainId] = useState(
-        sepolia.id
+        chainSelectorOptions[0].chainId
     );
     const [selectedDestChainId, setSelectedDestChainId] = useState(
-        polygonZkEvmCardona.id
+        chainSelectorOptions[1].chainId
     );
-
     const [amount, setAmount] = useState("");
+    const [isBalanceInsufficient, setIsBalanceInsufficient] = useState(false);
+    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
+    const [buttonText, setButtonText] = useState("Please connect");
+    const [buttonClass, setButtonClass] = useState("bg-gray-400");
+
+    const { chain, switchChainAsync } = useSwitchChain();
+    const { address, isConnected, chainId } = useAccount();
     const { data: hash, writeContractAsync: writeContract } =
         useWriteContract();
     const { data: balanceData, isSuccess } = useBalance({
@@ -36,26 +39,18 @@ export default function Page() {
         chainId: selectedOriginChainId,
     });
 
-    const chains = {
-        11155111: 0,
-        2442: 1,
-        6038361: 2,
-    };
-
     const handleOriginChainSelect = (chainId) => {
         if (chainId === selectedDestChainId) {
             setSelectedDestChainId(selectedOriginChainId);
         }
         setSelectedOriginChainId(chainId);
     };
-
     const handleDestChainSelect = (chainId) => {
         if (chainId === selectedOriginChainId) {
             setSelectedOriginChainId(selectedDestChainId);
         }
         setSelectedDestChainId(chainId);
     };
-
     const handleBridgeClick = async () => {
         try {
             setIsLoading(true);
@@ -64,7 +59,7 @@ export default function Page() {
             }
 
             const args = [
-                chains[selectedDestChainId], // destinationNetwork
+                getChainIndex(selectedDestChainId), // destinationNetwork
                 address, // destinationAddress
                 parseUnits(amount.toString(), 18), // amount
                 "0x0000000000000000000000000000000000000000", // token
@@ -87,11 +82,6 @@ export default function Page() {
             setIsLoading(false);
         }
     };
-
-    const [isBalanceInsufficient, setIsBalanceInsufficient] = useState(false);
-    const [isButtonDisabled, setIsButtonDisabled] = useState(true);
-    const [buttonText, setButtonText] = useState("Please connect");
-    const [buttonClass, setButtonClass] = useState("bg-gray-400");
 
     useEffect(() => {
         const insufficientBalance =
