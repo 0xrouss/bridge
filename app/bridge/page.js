@@ -5,6 +5,7 @@ import {
     useAccount,
     useBalance,
     useSwitchChain,
+    useWalletClient,
     useWriteContract,
 } from "wagmi";
 import BigAmountInput from "@/components/BigAmountInput";
@@ -12,7 +13,7 @@ import ChainSelect from "@/components/ChainSelect";
 import PreviousTransactions from "@/components/PreviousTransactions";
 import { parseUnits } from "viem";
 import PolygonZkEVMBridge from "@/lib/PolygonZkEVMBridge";
-import { TESTNET_BRIDGE_ADDRESS } from "@/config/constants";
+import { TESTNET_BRIDGE_ADDRESS, ZERO_ADDRESS } from "@/config/constants";
 import { getChainIndex } from "@/utils/chainUtils";
 import { chainSelectorOptions } from "@/config/chains";
 
@@ -62,7 +63,7 @@ export default function Page() {
                 getChainIndex(selectedDestChainId), // destinationNetwork
                 address, // destinationAddress
                 parseUnits(amount.toString(), 18), // amount
-                "0x0000000000000000000000000000000000000000", // token
+                ZERO_ADDRESS, // token
                 true, // forceUpdateGlobalExitRoot
                 "", // permitData
             ];
