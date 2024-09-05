@@ -105,10 +105,10 @@ export default function Page() {
             setButtonClass("bg-gray-400");
         } else if (isLoading) {
             setButtonText("Bridging...");
-            setButtonClass("bg-indigo-500");
+            setButtonClass("bg-custom-purple");
         } else {
             setButtonText("Bridge");
-            setButtonClass("bg-indigo-500 hover:bg-indigo-600");
+            setButtonClass("bg-custom-purple hover:bg-indigo-600");
         }
     }, [isConnected, isSuccess, balanceData, amount, isLoading]);
 

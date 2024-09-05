@@ -6,8 +6,8 @@ import { Inter } from "next/font/google";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata = {
-    title: "About Page",
-    description: "This is the about page",
+    title: "Rouss Bridge",
+    description: "Bridge Ether using the Lxly Bridge",
 };
 
 export default function BridgeLayout({ children }) {

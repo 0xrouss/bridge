@@ -16,7 +16,7 @@ module.exports = {
                 subscribe: ["Subscribe", "sans-serif"],
             },
             colors: {
-                "custom-purple": "#4f46e5",
+                "custom-purple": "#574fe9",
             },
         },
     },

@@ -4,12 +4,15 @@ import { getUserBridgeTransactions } from "@/lib/agglayerAPI";
 import { chainsIndexed } from "@/config/chains";
 import Image from "next/image";
 import { formatEther } from "viem";
+import ClaimButton from "./ClaimButton";
 
 export default function PreviousTransactions() {
     const [isOpen, setIsOpen] = useState(false);
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState(null);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [transactionsPerPage] = useState(2); // Set transactions per page to 5
     const contentRef = useRef(null);
     const { address } = useAccount(); // Get the connected user's address
 
@@ -18,17 +21,8 @@ export default function PreviousTransactions() {
     };
 
     useEffect(() => {
-        if (contentRef.current) {
-            contentRef.current.style.maxHeight = isOpen
-                ? `${contentRef.current.scrollHeight}px`
-                : "0";
-        }
-    }, [isOpen]);
-
-    // Fetch transactions when the dropdown is opened
-    useEffect(() => {
         const fetchTransactions = async () => {
-            if (isOpen && address) {
+            if (address) {
                 setLoading(true);
                 setError(null);
                 try {
@@ -45,7 +39,39 @@ export default function PreviousTransactions() {
         };
 
         fetchTransactions();
-    }, [isOpen, address]);
+    }, [address]); // This effect now triggers on address change
+
+    // The isOpen effect now just opens/closes the dropdown
+    useEffect(() => {
+        if (contentRef.current) {
+            contentRef.current.style.maxHeight = isOpen
+                ? `${contentRef.current.scrollHeight}px`
+                : "0";
+        }
+    }, [isOpen]);
+
+    // Pagination logic
+    const indexOfLastTransaction = currentPage * transactionsPerPage;
+    const indexOfFirstTransaction =
+        indexOfLastTransaction - transactionsPerPage;
+    const currentTransactions = transactions.slice(
+        indexOfFirstTransaction,
+        indexOfLastTransaction
+    );
+
+    const totalPages = Math.ceil(transactions.length / transactionsPerPage);
+
+    const nextPage = () => {
+        if (currentPage < totalPages) {
+            setCurrentPage(currentPage + 1);
+        }
+    };
+
+    const prevPage = () => {
+        if (currentPage > 1) {
+            setCurrentPage(currentPage - 1);
+        }
+    };
 
     return (
         <div className="mt-4 w-full max-w-4xl mx-auto">
@@ -85,7 +111,7 @@ export default function PreviousTransactions() {
                     ) : transactions.length > 0 ? (
                         <>
                             <div>
-                                {transactions.map((tx, index) => (
+                                {currentTransactions.map((tx, index) => (
                                     <div
                                         key={index}
                                         className="border-b border-gray-200 p-4 hover:bg-gray-50"
@@ -155,9 +181,9 @@ export default function PreviousTransactions() {
                                                 ).toLocaleString()}
                                             </div>
                                         </div>
-                                        <div className="text-md text-gray-500 flex justify-between items-center">
+                                        <div className="text-md flex justify-between items-baseline pt-4">
                                             <div>
-                                                <span className="text-md text-gray-500">
+                                                <span>
                                                     <a
                                                         href={`${
                                                             chainsIndexed[
@@ -169,18 +195,51 @@ export default function PreviousTransactions() {
                                                         }`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
-                                                        className="text-blue-600"
+                                                        className="text-custom-purple p-2 py-2.5 w-24 border rounded-md"
                                                     >
                                                         Explorer
                                                     </a>
                                                 </span>
                                             </div>
-                                            <div className="text-md text-gray-500">
-                                                Status: {tx.status}
+                                            <div>
+                                                <ClaimButton
+                                                    txHash={tx.transactionHash}
+                                                    destinationNetwork={
+                                                        tx.destinationNetwork
+                                                    }
+                                                    status={tx.status}
+                                                    timestamp={tx.timestamp}
+                                                />
                                             </div>
                                         </div>
                                     </div>
                                 ))}
+                            </div>
+                            {/* Pagination Controls */}
+                            <div className="flex justify-between items-center p-4">
+                                <button
+                                    onClick={prevPage}
+                                    disabled={currentPage === 1}
+                                    className={`px-4 py-2 border rounded ${
+                                        currentPage === 1 ? "opacity-50" : ""
+                                    }`}
+                                >
+                                    Previous
+                                </button>
+                                <span>
+                                    Page {currentPage} of {totalPages}
+                                </span>
+                                <button
+                                    onClick={nextPage}
+                                    disabled={currentPage === totalPages}
+                                    className={`px-4 py-2 border rounded ${
+                                        currentPage === totalPages
+                                            ? "opacity-50"
+                                            : ""
+                                    }`}
+                                >
+                                    Next
+                                </button>
                             </div>
                         </>
                     ) : (
