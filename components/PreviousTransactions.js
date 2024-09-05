@@ -202,14 +202,7 @@ export default function PreviousTransactions() {
                                                 </span>
                                             </div>
                                             <div>
-                                                <ClaimButton
-                                                    txHash={tx.transactionHash}
-                                                    destinationNetwork={
-                                                        tx.destinationNetwork
-                                                    }
-                                                    status={tx.status}
-                                                    timestamp={tx.timestamp}
-                                                />
+                                                <ClaimButton tx={tx} />
                                             </div>
                                         </div>
                                     </div>
