@@ -1,6 +1,7 @@
 import { chainsIndexed } from "@/config/chains";
-import { ZERO_ADDRESS } from "@/config/constants";
-import { getMerkleProof } from "@/lib/agglayerAPI";
+import { TESTNET_BRIDGE_ADDRESS, ZERO_ADDRESS } from "@/config/constants";
+import { computeGlobalIndex, getMerkleProof } from "@/lib/agglayerAPI";
+import PolygonZkEVMBridge from "@/lib/PolygonZkEVMBridge";
 import { useState, useEffect } from "react";
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi";
 
@@ -22,7 +23,7 @@ export default function ClaimButton({ tx }) {
         const timeDifference = (currentTime - transactionTime) / 1000 / 60; // Convert to minutes
 
         // Check if the timestamp is within the last 15 minutes
-        if (timeDifference < 20) {
+        if (timeDifference < 15) {
             setIsBridging(true);
         } else {
             setIsBridging(false);
@@ -47,27 +48,27 @@ export default function ClaimButton({ tx }) {
             const args = [
                 merkleProof.merkle_proof,
                 merkleProof.rollup_merkle_proof,
-                tx.counter,
+                computeGlobalIndex(tx.counter, tx.sourceNetwork).toString(),
                 merkleProof.main_exit_root,
                 merkleProof.rollup_exit_root,
-                tx.sourceNetwork,
+                tx.originTokenNetwork,
                 ZERO_ADDRESS,
                 tx.destinationNetwork,
                 tx.userAddress,
-                tx.amounts[0],
-                "",
+                BigInt(tx.amounts[0]),
+                "0x",
             ];
 
-            const tx = await writeContract({
+            const hash = await writeContract({
                 address: TESTNET_BRIDGE_ADDRESS,
                 abi: PolygonZkEVMBridge,
                 functionName: "claimAsset",
                 args: args,
             });
 
-            console.log(tx); // TODO: toast
-        } catch {
-            console.log("----error----"); // TODO: toast
+            console.log(hash); // TODO: toast
+        } catch (e) {
+            console.log("----error----", e); // TODO: toast
         } finally {
             setIsLoading(false);
         }
