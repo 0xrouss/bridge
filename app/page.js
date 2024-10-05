@@ -103,7 +103,7 @@ const skillsData = [
 const articlesData = [
     {
         title: "How to implement Stackr's Microrollup",
-        link: "#",
+        link: "https://mirror.xyz/vigara.eth/LRWnNsDbcOccbWyM2Z00nwr7B5A3DDjCm7xSfxeiYBE",
         image: "/stackr.png",
     },
     {
